@@ -1,0 +1,80 @@
+#!/bin/sh
+
+set -e
+
+hostsrc="$(cd "$(dirname "$0")"; pwd -P)/host.go"
+
+basedir="$PWD"
+if [ $# -gt 0 ]; then
+    case "$1" in
+	/*) basedir="$1" ;;
+	*)  basedir="$PWD/$1" ;;
+    esac
+    shift
+fi
+mkdir -p "$basedir"
+cd "$basedir"
+
+# Clear out any existing GOPATH remnants
+if [ -e go ]; then
+    chmod -R +w go
+    rm -rf go
+fi
+
+# Create an example module with import path 127.0.0.1/example
+if [ ! -e src/example ]; then
+    mkdir -p src/example/cmd/demo www/example
+    (
+        cd src/example
+        git init
+        go mod init 127.0.0.1/example
+        cat >example.go <<EOF
+package example
+
+func Version() string {
+	return "Example v1.0.0"
+}
+EOF
+        cat >cmd/demo/main.go <<EOF
+package main
+
+import (
+	"fmt"
+
+	"127.0.0.1/example"
+)
+
+func main() {
+	fmt.Println(example.Version())
+}
+EOF
+        git add .
+        git commit -a -m example
+        git tag -a v1.0.0 -m v1.0.0
+    )
+    cat >www/example/index.html <<EOF
+<!DOCTYPE html>
+<meta charset="utf-8">
+<meta name="go-import" content="127.0.0.1/example git git://127.0.0.1/example">
+EOF
+fi
+
+# NOTE: $basedir is not properly escaped/quoted when written out to this
+# shell script, so don't choose anything too crazy.
+cat >activate <<EOF
+# source this file to enter the testbed environment
+basedir='$basedir'
+export GOPATH="\$basedir/go"
+export GOCACHE="\$GOPATH/cache"
+export GOENV="\$GOPATH/env"
+export GO111MODULE=on
+export GOINSECURE=127.0.0.1
+export GOPRIVATE=127.0.0.1
+if [ -z "\$testbed_active" ]; then
+    testbed_active=true
+    PATH="\$GOPATH/bin:\$PATH"
+    PS1="(\$(basename "\$basedir")) \$PS1"
+fi
+EOF
+
+exec go run "$hostsrc" "$@"
