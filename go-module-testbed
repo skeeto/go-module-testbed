@@ -54,7 +54,6 @@ EOF
     )
     cat >www/example/index.html <<EOF
 <!DOCTYPE html>
-<meta charset="utf-8">
 <meta name="go-import" content="127.0.0.1/example git git://127.0.0.1/example">
 EOF
 fi
