@@ -6,6 +6,8 @@ and Git daemon to host the modules themselves. Both are bound to
 127.0.0.1 and are not externally accessible. Security is disabled for
 modules hosted by the testbed, so no certificates are required.
 
+Introduction: [A Go Module Testbed](https://nullprogram.com/blog/2020/02/13/)
+
 Requires **Go 1.14** or later.
 
 ## Usage
