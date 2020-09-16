@@ -3,8 +3,9 @@
 This script creates and hosts a testbed environment for experimenting
 with Go modules. It runs both a static web server to host module paths,
 and Git daemon to host the modules themselves. Both are bound to
-127.0.0.1 and are not externally accessible. Security is disabled for
-modules hosted by the testbed, so no certificates are required.
+`localhost.localdomain` and are not externally accessible. Security is
+disabled for modules hosted by the testbed, so no certificates are
+required.
 
 Requires **Go 1.14** or later.
 
@@ -16,26 +17,20 @@ current working directory, and an optional argument supplies an
 alternate testbed directory.
 
     ./go-module-testbed [dir [options...]]
-      -p port    HTTP server port
+      -p port    HTTP server port [8001]
 
 The testbed directory will be populated with an `activate` shell script
-and a example module named `127.0.0.1/example` at v1.0.0.
-
-The web server *must* be available on port 80 which, unfortunately,
-requires mucking about with system configuration. The web server is
-hosted by default on port 8001, so on Linux a temporary `iptables`
-configuration will do the trick:
-
-     iptables -t nat -I OUTPUT -p tcp -d 127.0.0.1 --dport 80 -j REDIRECT --to-ports 8001
+and a example module named `localhost.localdomain/example` at v1.0.0.
 
 With the servers running successfully, start a new shell and source the
 `activate` script in the testbed directory. All Go commands will be
 isolated to the testbed, and modules can be fetched from `src/` by
-module paths starting with `127.0.0.1/`. To check if it's working:
+module paths starting with `localhost.localdomain/`. To check if it's
+working:
 
-    $ go get 127.0.0.1/example/cmd/demo
-    go: downloading 127.0.0.1/example v1.0.0
-    go: found 127.0.0.1/example/cmd/demo in 127.0.0.1/example v1.0.0
+    $ go get localhost.localdomain/example/cmd/demo
+    go: downloading localhost.localdomain/example v1.0.0
+    go: found localhost.localdomain/example/cmd/demo in localhost.localdomain/example v1.0.0
     $ demo
     Example v1.0.0
 

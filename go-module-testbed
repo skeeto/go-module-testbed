@@ -2,6 +2,11 @@
 
 set -e
 
+usage() {
+    printf './go-module-testbed [dir [options...]]\n'
+    printf '  -p port    HTTP server port [8001]\n'
+}
+
 hostsrc="$(cd "$(dirname "$0")"; pwd -P)/host.go"
 
 basedir="$PWD"
@@ -12,6 +17,16 @@ if [ $# -gt 0 ]; then
     esac
     shift
 fi
+
+port="8001"
+while getopts p: option
+do
+    case $option in
+    p) port="$OPTARG";;
+    ?) usage; exit 2;;
+    esac
+done
+
 mkdir -p "$basedir"
 cd "$basedir"
 
@@ -21,13 +36,13 @@ if [ -e go ]; then
     rm -rf go
 fi
 
-# Create an example module with import path 127.0.0.1/example
+# Create an example module with import path localhost.localdomain/example
 if [ ! -e src/example ]; then
     mkdir -p src/example/cmd/demo www/example
     (
         cd src/example
         git init
-        go mod init 127.0.0.1/example
+        go mod init localhost.localdomain/example
         cat >example.go <<EOF
 package example
 
@@ -41,7 +56,7 @@ package main
 import (
 	"fmt"
 
-	"127.0.0.1/example"
+	"localhost.localdomain/example"
 )
 
 func main() {
@@ -54,7 +69,7 @@ EOF
     )
     cat >www/example/index.html <<EOF
 <!DOCTYPE html>
-<meta name="go-import" content="127.0.0.1/example git git://127.0.0.1/example">
+<meta name="go-import" content="localhost.localdomain/example git git://localhost.localdomain/example">
 EOF
 fi
 
@@ -66,9 +81,12 @@ basedir='$basedir'
 export GOPATH="\$basedir/go"
 export GOCACHE="\$GOPATH/cache"
 export GOENV="\$GOPATH/env"
-export GO111MODULE=on
-export GOINSECURE=127.0.0.1
-export GOPRIVATE=127.0.0.1
+export GO111MODULE="on"
+export GOINSECURE="localhost.localdomain"
+export GOPRIVATE="localhost.localdomain"
+export GOPROXY="https://proxy.golang.org"
+export HTTP_PROXY="localhost.localdomain:$port"
+export NO_PROXY="proxy.golang.org,sum.golang.org"
 if [ -z "\$testbed_active" ]; then
     testbed_active=true
     PATH="\$GOPATH/bin:\$PATH"

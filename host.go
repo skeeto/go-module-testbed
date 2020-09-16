@@ -26,7 +26,7 @@ func main() {
 	args := []string{
 		"daemon",
 		"--base-path=./src",
-		"--listen=127.0.0.1",
+		"--listen=localhost.localdomain",
 		"--reuseaddr",
 		"--export-all",
 	}
@@ -43,7 +43,7 @@ func main() {
 
 	fs := http.FileServer(http.Dir("www"))
 	http.Handle("/", &logger{fs})
-	addr := "127.0.0.1:" + strconv.Itoa(*port)
+	addr := "localhost.localdomain:" + strconv.Itoa(*port)
 	log.Println("listening at", addr)
 	log.Fatal(http.ListenAndServe(addr, nil))
 }
